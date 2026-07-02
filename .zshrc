@@ -3,11 +3,12 @@
 export ZSH="$HOME/.oh-my-zsh"
 
 # Theme (no powerline font dependency, shows git status)
-ZSH_THEME="af-magic"
+ZSH_THEME="robbyrussell"
 
 # Plugins
 plugins=(
   git
+  fzf-zsh-plugin
   zsh-autosuggestions
   zsh-syntax-highlighting
 )
