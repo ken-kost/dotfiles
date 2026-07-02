@@ -15,6 +15,8 @@ plugins=(
 
 source "$ZSH/oh-my-zsh.sh"
 
+. "$HOME/.asdf/asdf.sh"
+
 # ---- Personal aliases/shortcuts ----
 [ -f "$HOME/.aliases" ] && source "$HOME/.aliases"
 
