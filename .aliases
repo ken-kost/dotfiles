@@ -1,0 +1,21 @@
+# ~/.aliases — sourced from .zshrc
+
+# Navigation
+alias ..="cd .."
+alias ...="cd ../.."
+alias ll="ls -lah"
+alias la="ls -A"
+
+# Git shortcuts beyond the oh-my-zsh git plugin defaults
+alias gs="git status"
+alias gd="git diff"
+alias glog="git log --oneline --graph --decorate --all"
+
+# Safety nets
+alias rm="rm -i"
+alias cp="cp -i"
+alias mv="mv -i"
+
+# Quick edits
+alias zshrc="$EDITOR ~/.zshrc"
+alias reload="source ~/.zshrc"
