@@ -7,23 +7,36 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "==> Detecting package manager..."
-if command -v apt >/dev/null 2>&1; then
-  PKG_INSTALL="apt update && apt install -y"
-elif command -v pacman >/dev/null 2>&1; then
-  PKG_INSTALL="pacman -Sy --noconfirm"
-else
-  echo "No supported package manager found (apt or pacman). Install zsh/git/curl manually and re-run." >&2
-  exit 1
-fi
 
-# Use sudo if not root
+# Use sudo if not root and sudo is available non-interactively
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
-  SUDO="sudo"
+  if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    SUDO="sudo"
+  fi
 fi
 
+install_pkgs() {
+  if command -v apt >/dev/null 2>&1; then
+    $SUDO apt update && $SUDO apt install -y "$@"
+  elif command -v pacman >/dev/null 2>&1; then
+    $SUDO pacman -Sy --noconfirm "$@"
+  else
+    echo "No supported package manager found (apt or pacman). Install zsh/git/curl manually and re-run." >&2
+    exit 1
+  fi
+}
+
 echo "==> Installing zsh, git, curl..."
-eval "$SUDO $PKG_INSTALL zsh git curl"
+if ! install_pkgs zsh git curl; then
+  echo "" >&2
+  echo "ERROR: package install failed. This usually means you're not root and passwordless" >&2
+  echo "sudo isn't set up in this container. Either:" >&2
+  echo "  - run this script as root (many containers default to root), or" >&2
+  echo "  - add your user to sudoers with NOPASSWD, or" >&2
+  echo "  - pre-bake zsh/git/curl into your container image instead." >&2
+  exit 1
+fi
 
 echo "==> Installing oh-my-zsh (unattended)..."
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -54,7 +67,7 @@ done
 
 echo "==> Setting zsh as default shell..."
 if [ "$SHELL" != "$(command -v zsh)" ]; then
-  chsh -s "$(command -v zsh)" "$(whoami)" || echo "    Could not chsh automatically (no login session?). Run manually: chsh -s \$(command -v zsh)"
+  $SUDO chsh -s "$(command -v zsh)" "$(whoami)" || echo "    Could not chsh automatically. Run manually: chsh -s \$(command -v zsh)"
 fi
 
 echo ""
