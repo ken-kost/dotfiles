@@ -28,7 +28,7 @@ install_pkgs() {
 }
 
 echo "==> Installing zsh, git, curl..."
-if ! install_pkgs zsh git curl; then
+if ! install_pkgs zsh; then
   echo "" >&2
   echo "ERROR: package install failed. This usually means you're not root and passwordless" >&2
   echo "sudo isn't set up in this container. Either:" >&2
