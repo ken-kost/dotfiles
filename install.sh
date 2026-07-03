@@ -65,6 +65,36 @@ for file in .zshrc .aliases .gitconfig; do
   echo "    Linked $target -> $source"
 done
 
+echo "==> Installing tidewave-cli..."
+TIDEWAVE_BIN="$HOME/.local/bin/tidewave-cli"
+mkdir -p "$HOME/.local/bin"
+if [ -x "$TIDEWAVE_BIN" ]; then
+  echo "    tidewave-cli already installed, skipping."
+else
+  case "$(uname -m)" in
+    x86_64) TIDEWAVE_ARCH="x86_64-unknown-linux-gnu" ;;
+    aarch64) TIDEWAVE_ARCH="aarch64-unknown-linux-gnu" ;;
+    *)
+      TIDEWAVE_ARCH=""
+      echo "    Unsupported architecture $(uname -m) for tidewave-cli, skipping." >&2
+      ;;
+  esac
+
+  if [ -n "$TIDEWAVE_ARCH" ]; then
+    TIDEWAVE_URL=$(curl -fsSL https://api.github.com/repos/tidewave-ai/tidewave_app/releases/latest 2>/dev/null \
+      | grep "browser_download_url.*tidewave-cli-$TIDEWAVE_ARCH\"" \
+      | cut -d '"' -f 4)
+
+    if [ -n "$TIDEWAVE_URL" ] && curl -fsSL -o "$TIDEWAVE_BIN" "$TIDEWAVE_URL"; then
+      chmod +x "$TIDEWAVE_BIN"
+      echo "    Installed tidewave-cli -> $TIDEWAVE_BIN"
+    else
+      echo "    Could not download tidewave-cli (offline or GitHub API rate-limited), skipping." >&2
+      rm -f "$TIDEWAVE_BIN"
+    fi
+  fi
+fi
+
 echo "==> Setting zsh as default shell..."
 if [ "$SHELL" != "$(command -v zsh)" ]; then
   $SUDO chsh -s "$(command -v zsh)" "$(whoami)" || echo "    Could not chsh automatically. Run manually: chsh -s \$(command -v zsh)"

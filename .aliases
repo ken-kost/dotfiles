@@ -19,3 +19,20 @@ alias mv="mv -i"
 # Quick edits
 alias zshrc="$EDITOR ~/.zshrc"
 alias reload="source ~/.zshrc"
+
+# Tidewave CLI — runs in a detached tmux session so it survives shell/session
+# restarts. Port must match whatever local port you forward it to over
+# `coder port-forward` (it varies machine to machine), hence the argument.
+tidewave-start() {
+  local port="${1:-9832}"
+  if ! command -v tidewave-cli >/dev/null 2>&1; then
+    echo "tidewave-cli not found on PATH — re-run dotfiles install.sh" >&2
+    return 1
+  fi
+  tmux kill-session -t tidewave 2>/dev/null
+  tmux new-session -d -s tidewave "tidewave-cli --allowed-origins http://localhost:${port}"
+  echo "tidewave-cli running in tmux 'tidewave', allowed-origins=http://localhost:${port}"
+}
+tidewave-stop() { tmux kill-session -t tidewave 2>/dev/null; }
+tidewave-logs() { tmux capture-pane -t tidewave -p; }
+tidewave-status() { tmux list-sessions 2>/dev/null | grep tidewave || echo "not running"; }
